@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎹 Practice Log</title>
+<meta name="theme-color" content="#faf8f5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Piano Log">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+
+  :root {
+    --bg: #faf8f5;
+    --bg-elevated: #ffffff;
+    --accent: #c75b3a;
+    --accent-soft: #d97b5a;
+    --accent-bg: #fdf1ed;
+    --text: #2d2a26;
+    --text-muted: #8a8580;
+    --border: #ebe7e2;
+    --border-light: #f0ece7;
+    --success: #5a8f6e;
+    --success-bg: #edf5f0;
+    --shadow: 0 1px 3px rgba(45,42,38,0.04), 0 4px 12px rgba(45,42,38,0.06);
+    --shadow-hover: 0 2px 6px rgba(45,42,38,0.06), 0 8px 24px rgba(45,42,38,0.08);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
+
+  /* Header */
+  .header {
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header h1 {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  .header .subtitle {
+    color: var(--text-muted);
+    margin-top: 6px;
+    font-size: 0.95rem;
+    font-weight: 400;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    background: var(--bg-elevated);
+    padding: 6px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    width: fit-content;
+  }
+  .tab {
+    padding: 10px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    font-weight: 500;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+  .tab:hover:not(.active) {
+    color: var(--text);
+    background: var(--border-light);
+  }
+  .tab.active {
+    background: var(--text);
+    color: #fff;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  }
+
+  /* Panels */
+  .panel { display: none; }
+  .panel.active {
+    display: block;
+    animation: fadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Cards */
+  .card {
+    background: var(--bg-elevated);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.2s ease;
+  }
+  .card:hover {
+    box-shadow: var(--shadow-hover);
+  }
+  .card h2 {
+    margin: 0 0 18px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  /* Form */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 520px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .container { padding: 20px 16px; }
+    .header h1 { font-size: 1.7rem; }
+  }
+
+  label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--accent-soft);
+    box-shadow: 0 0 0 3px var(--accent-bg);
+  }
+  input::placeholder { color: #b5b0aa; }
+
+  button {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.92rem;
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+  button:hover { transform: translateY(-1px); }
+  button:active { transform: translateY(0) scale(0.98); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(199,91,58,0.25);
+  }
+  .btn-primary:hover {
+    background: #b54d2e;
+    box-shadow: 0 4px 12px rgba(199,91,58,0.3);
+  }
+  .btn-secondary {
+    background: var(--bg);
+    color: var(--text);
+    border: 1.5px solid var(--border);
+  }
+  .btn-secondary:hover {
+    background: var(--border-light);
+    border-color: var(--text-muted);
+  }
+  .btn-success {
+    background: var(--success);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(90,143,110,0.25);
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .btn-row button { flex: 1; }
+
+  /* Stats grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+  }
+  .stat-box {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 18px 14px;
+    text-align: center;
+    border: 1px solid var(--border-light);
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .stat-box:hover {
+    transform: translateY(-2px);
+    border-color: var(--border);
+  }
+  .stat-value {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+    font-weight: 500;
+  }
+
+  /* Lists */
+  .entry-list {
+    max-height: 360px;
+    overflow-y: auto;
+    margin: -6px;
+    padding: 6px;
+  }
+  .entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+    transition: background 0.15s;
+  }
+  .entry:hover { background: var(--bg); }
+  .entry:last-child { margin-bottom: 0; }
+  .entry-piece { font-weight: 600; color: var(--text); }
+  .entry-meta { color: var(--text-muted); font-size: 0.8rem; margin-top: 2px; }
+  .entry-duration {
+    font-weight: 700;
+    color: var(--success);
+    font-size: 0.95rem;
+    white-space: nowrap;
+  }
+  .delete-btn {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1.5px solid var(--border);
+    padding: 5px 12px;
+    font-size: 0.8rem;
+    width: auto;
+    border-radius: 8px;
+    margin-left: 10px;
+    transition: all 0.15s;
+  }
+  .delete-btn:hover {
+    background: #fff0ee;
+    color: #c0392b;
+    border-color: #e0b4ae;
+  }
+
+  /* Charts */
+  .chart-container {
+    position: relative;
+    height: 260px;
+    margin-top: 8px;
+  }
+  canvas {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* Piece cards */
+  .piece-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px;
+  }
+  .piece-card {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 18px;
+    border: 1px solid var(--border-light);
+    border-left: 3px solid var(--accent);
+    transition: all 0.2s ease;
+    cursor: default;
+  }
+  .piece-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--border);
+  }
+  .piece-card-name {
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .piece-card-time {
+    font-size: 1.4rem;
+    color: var(--accent);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .piece-card-stats {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+    font-weight: 500;
+  }
+
+  /* Month selector */
+  .month-nav {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .month-nav button {
+    width: auto;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+  .month-current {
+    font-weight: 600;
+    font-size: 1.15rem;
+    font-family: 'Playfair Display', Georgia, serif;
+    color: var(--text);
+    flex: 1;
+    text-align: center;
+  }
+
+  .empty-state {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 40px 20px;
+    font-size: 0.95rem;
+  }
+  .empty-state-icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    opacity: 0.5;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+  /* Floating badge for saved feedback */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--text);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    box-shadow: var(--shadow-hover);
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Streak flame */
+  .streak-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--accent-bg);
+    color: var(--accent);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🎹 Practice Log</h1>
+    <div class="subtitle">Track time. See progress. Keep playing.</div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="log">➕ Log Session</div>
+    <div class="tab" data-tab="overview">📊 Overview</div>
+    <div class="tab" data-tab="monthly">📅 By Month</div>
+    <div class="tab" data-tab="scores">📖 By Score</div>
+    <div class="tab" data-tab="history">📋 History</div>
+  </div>
+
+  <!-- LOG SESSION -->
+  <div class="panel active" id="panel-log">
+    <div class="card">
+      <h2>Log a Practice Session</h2>
+      <div class="form-grid">
+        <div>
+          <label>Date</label>
+          <input type="date" id="logDate">
+        </div>
+        <div>
+          <label>Score / Piece</label>
+          <input type="text" id="logPiece" list="pieceList" placeholder="e.g. Chopin Prelude in A major">
+          <datalist id="pieceList"></datalist>
+        </div>
+        <div>
+          <label>Minutes Practiced</label>
+          <input type="number" id="logMinutes" min="1" placeholder="e.g. 10" value="10">
+        </div>
+        <div>
+          <label>Composer (optional)</label>
+          <input type="text" id="logComposer" placeholder="e.g. Chopin">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" onclick="addSession()">Save Session</button>
+        <button class="btn-secondary" onclick="quickLog(10)">Quick: 10 min</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>This Week</h2>
+      <div class="stats-grid" id="weekStats"></div>
+    </div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="panel" id="panel-overview">
+    <div class="card">
+      <h2>Lifetime Stats</h2>
+      <div class="stats-grid" id="lifetimeStats"></div>
+    </div>
+    <div class="card">
+      <h2>Your Repertoire</h2>
+      <div id="repertoireList" class="piece-cards"></div>
+    </div>
+    <div class="card">
+      <h2>Weekly Trend (last 8 weeks)</h2>
+      <div class="chart-container"><canvas id="weeklyChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- MONTHLY -->
+  <div class="panel" id="panel-monthly">
+    <div class="card">
+      <div class="month-nav">
+        <button class="btn-secondary" onclick="changeMonth(-1)">◀ Prev</button>
+        <div class="month-current" id="monthLabel">...</div>
+        <button class="btn-secondary" onclick="changeMonth(1)">Next ▶</button>
+      </div>
+      <div class="stats-grid" id="monthStats"></div>
+    </div>
+    <div class="card">
+      <h2>Daily Breakdown</h2>
+      <div class="chart-container"><canvas id="dailyChart"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Time by Score This Month</h2>
+      <div class="chart-container"><canvas id="monthPieChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- BY SCORE -->
+  <div class="panel" id="panel-scores">
+    <div class="card">
+      <h2>Select a Score</h2>
+      <select id="scoreSelect" onchange="renderScoreDetail()"><option value="">-- Choose a piece --</option></select>
+    </div>
+    <div id="scoreDetail"></div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="panel" id="panel-history">
+    <div class="card">
+      <div class="btn-row" style="margin-bottom: 16px;">
+        <button class="btn-secondary" onclick="exportData()">⬇ Export JSON</button>
+        <button class="btn-secondary" onclick="document.getElementById('importFile').click()">⬆ Import JSON</button>
+        <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
+      </div>
+      <div class="entry-list" id="historyList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ================== DATA ==================
+const STORAGE_KEY = 'piano_practice_log_v1';
+
+function loadData() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  } catch { return []; }
+}
+function saveData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+let sessions = loadData();
+let currentMonth = new Date();
+
+// ================== UTILS ==================
+const fmtDate = d => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+const fmtMonth = d => new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+const sameDay = (a, b) => new Date(a).toDateString() === new Date(b).toDateString();
+const sameMonth = (a, b) => {
+  const da = new Date(a), db = new Date(b);
+  return da.getFullYear() === db.getFullYear() && da.getMonth() === db.getMonth();
+};
+const startOfWeek = d => {
+  const date = new Date(d);
+  const day = date.getDay();
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+  return new Date(date.setDate(diff));
+};
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const sum = arr => arr.reduce((a, b) => a + b, 0);
+
+// ================== LOGIC ==================
+function getPieces() {
+  return [...new Set(sessions.map(s => s.piece))].filter(Boolean).sort();
+}
+
+function addSession() {
+  const date = document.getElementById('logDate').value;
+  const piece = document.getElementById('logPiece').value.trim();
+  const minutes = parseInt(document.getElementById('logMinutes').value);
+  const composer = document.getElementById('logComposer').value.trim();
+
+  if (!date || !piece || !minutes || minutes < 1) {
+    showToast('Please fill in date, piece, and minutes.');
+    return;
+  }
+
+  sessions.push({
+    id: Date.now(),
+    date,
+    piece,
+    minutes,
+    composer,
+    createdAt: new Date().toISOString()
+  });
+
+  saveData(sessions);
+  renderAll();
+
+  // Reset
+  document.getElementById('logPiece').value = '';
+  document.getElementById('logMinutes').value = '10';
+  document.getElementById('logComposer').value = '';
+
+  showToast('✓ Session saved!');
+}
+
+function showToast(msg) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(20px)'; }, 2000);
+  setTimeout(() => t.remove(), 2300);
+}
+
+function quickLog(minutes) {
+  document.getElementById('logDate').valueAsDate = new Date();
+  document.getElementById('logMinutes').value = minutes;
+  document.getElementById('logPiece').focus();
+}
+
+function deleteSession(id) {
+  if (!confirm('Delete this session?')) return;
+  sessions = sessions.filter(s => s.id !== id);
+  saveData(sessions);
+  renderAll();
+  showToast('Session deleted');
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(sessions, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `piano-practice-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Exported!');
+}
+
+function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (Array.isArray(data)) {
+        sessions = data;
+        saveData(sessions);
+        renderAll();
+        showToast(`Imported ${data.length} sessions`);
+      } else showToast('Invalid file format.');
+    } catch { showToast('Could not parse file.'); }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+// ================== RENDER ==================
+function renderAll() {
+  updatePieceList();
+  renderWeekStats();
+  renderLifetimeStats();
+  renderRepertoire();
+  renderWeeklyChart();
+  renderMonthView();
+  renderScoreSelect();
+  renderScoreDetail();
+  renderHistory();
+}
+
+function updatePieceList() {
+  const dl = document.getElementById('pieceList');
+  dl.innerHTML = getPieces().map(p => `<option value="${p}">`).join('');
+}
+
+function renderWeekStats() {
+  const now = new Date();
+  const weekStart = startOfWeek(now);
+  const weekSessions = sessions.filter(s => new Date(s.date) >= weekStart && new Date(s.date) <= now);
+  const totalMin = sum(weekSessions.map(s => s.minutes));
+  const totalHrs = (totalMin / 60).toFixed(1);
+  const count = weekSessions.length;
+  const avg = count ? (totalMin / count).toFixed(0) : 0;
+  const pieces = [...new Set(weekSessions.map(s => s.piece))].length;
+
+  document.getElementById('weekStats').innerHTML = `
+    <div class="stat-box"><div class="stat-value">${totalHrs}</div><div class="stat-label">hours this week</div></div>
+    <div class="stat-box"><div class="stat-value">${count}</div><div class="stat-label">sessions</div></div>
+    <div class="stat-box"><div class="stat-value">${avg}</div><div class="stat-label">avg min/session</div></div>
+    <div class="stat-box"><div class="stat-value">${pieces}</div><div class="stat-label">pieces touched</div></div>
+  `;
+}
+
+function renderLifetimeStats() {
+  const totalMin = sum(sessions.map(s => s.minutes));
+  const totalHrs = (totalMin / 60).toFixed(1);
+  const count = sessions.length;
+  const pieces = [...new Set(sessions.map(s => s.piece))].filter(Boolean).length;
+  const avg = count ? (totalMin / count).toFixed(0) : 0;
+  const streak = computeStreak();
+
+  document.getElementById('lifetimeStats').innerHTML = `
+    <div class="stat-box"><div class="stat-value">${totalHrs}</div><div class="stat-label">total hours</div></div>
+    <div class="stat-box"><div class="stat-value">${count}</div><div class="stat-label">sessions</div></div>
+    <div class="stat-box"><div class="stat-value">${pieces}</div><div class="stat-label">pieces in repertoire</div></div>
+    <div class="stat-box"><div class="stat-value">${avg}</div><div class="stat-label">avg minutes</div></div>
+    <div class="stat-box"><div class="stat-value">${streak}</div><div class="stat-label">day streak ${streak > 2 ? '🔥' : ''}</div></div>
+  `;
+}
+
+function computeStreak() {
+  if (!sessions.length) return 0;
+  const days = [...new Set(sessions.map(s => s.date))].sort().reverse();
+  let streak = 1;
+  const today = new Date().toDateString();
+  let check = new Date(days[0]);
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+  if (check.toDateString() !== today && check.toDateString() !== yesterday.toDateString()) return 0;
+
+  for (let i = 1; i < days.length; i++) {
+    const prev = new Date(days[i]);
+    const expected = new Date(check);
+    expected.setDate(expected.getDate() - 1);
+    if (prev.toDateString() === expected.toDateString()) {
+      streak++;
+      check = prev;
+    } else break;
+  }
+  return streak;
+}
+
+function renderRepertoire() {
+  const pieceMap = {};
+  sessions.forEach(s => {
+    if (!pieceMap[s.piece]) pieceMap[s.piece] = { minutes: 0, sessions: 0, last: s.date };
+    pieceMap[s.piece].minutes += s.minutes;
+    pieceMap[s.piece].sessions++;
+    if (s.date > pieceMap[s.piece].last) pieceMap[s.piece].last = s.date;
+  });
+
+  const list = Object.entries(pieceMap).sort((a, b) => b[1].minutes - a[1].minutes);
+  if (!list.length) {
+    document.getElementById('repertoireList').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">🎼</div>
+        <div>No sessions yet. Go log one!</div>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('repertoireList').innerHTML = list.map(([name, stats]) => `
+    <div class="piece-card">
+      <div class="piece-card-name">${name}</div>
+      <div class="piece-card-time">${(stats.minutes / 60).toFixed(1)} hrs</div>
+      <div class="piece-card-stats">${stats.sessions} sessions · last: ${fmtDate(stats.last)}</div>
+    </div>
+  `).join('');
+}
+
+// ================== CHARTS (Canvas) ==================
+function drawBarChart(canvasId, labels, data, color) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+
+  const w = rect.width, h = rect.height;
+  const pad = { top: 20, right: 20, bottom: 40, left: 40 };
+  const chartW = w - pad.left - pad.right;
+  const chartH = h - pad.top - pad.bottom;
+
+  ctx.clearRect(0, 0, w, h);
+
+  const max = Math.max(...data, 1);
+  const barW = chartW / data.length * 0.55;
+  const step = chartW / data.length;
+
+  // Grid lines
+  ctx.strokeStyle = '#ebe7e2';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + (chartH / 4) * i;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(w - pad.right, y);
+    ctx.stroke();
+  }
+
+  // Axes
+  ctx.strokeStyle = '#d5d0ca';
+  ctx.beginPath();
+  ctx.moveTo(pad.left, pad.top);
+  ctx.lineTo(pad.left, h - pad.bottom);
+  ctx.lineTo(w - pad.right, h - pad.bottom);
+  ctx.stroke();
+
+  // Bars with rounded tops
+  data.forEach((val, i) => {
+    const x = pad.left + step * i + (step - barW) / 2;
+    const barH = (val / max) * chartH;
+    const y = h - pad.bottom - barH;
+    const r = Math.min(barW / 2, 6);
+
+    ctx.fillStyle = color || '#c75b3a';
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + barW - r, y);
+    ctx.quadraticCurveTo(x + barW, y, x + barW, y + r);
+    ctx.lineTo(x + barW, h - pad.bottom);
+    ctx.lineTo(x, h - pad.bottom);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+    ctx.fill();
+
+    // Label
+    ctx.fillStyle = '#8a8580';
+    ctx.font = '500 11px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(labels[i], x + barW / 2, h - pad.bottom + 18);
+
+    // Value
+    if (val > 0) {
+      ctx.fillStyle = '#2d2a26';
+      ctx.font = '600 12px Inter, sans-serif';
+      ctx.fillText(val, x + barW / 2, y - 8);
+    }
+  });
+}
+
+function drawLineChart(canvasId, labels, data, color) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+
+  const w = rect.width, h = rect.height;
+  const pad = { top: 20, right: 20, bottom: 40, left: 40 };
+  const chartW = w - pad.left - pad.right;
+  const chartH = h - pad.top - pad.bottom;
+
+  ctx.clearRect(0, 0, w, h);
+
+  const max = Math.max(...data, 1);
+  const step = chartW / (data.length - 1 || 1);
+
+  // Grid
+  ctx.strokeStyle = '#ebe7e2';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + (chartH / 4) * i;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(w - pad.right, y);
+    ctx.stroke();
+  }
+
+  // Fill area under line
+  ctx.fillStyle = (color || '#c75b3a') + '18';
+  ctx.beginPath();
+  data.forEach((val, i) => {
+    const x = pad.left + step * i;
+    const y = h - pad.bottom - (val / max) * chartH;
+    if (i === 0) ctx.moveTo(x, h - pad.bottom);
+    ctx.lineTo(x, y);
+    if (i === data.length - 1) ctx.lineTo(x, h - pad.bottom);
+  });
+  ctx.closePath();
+  ctx.fill();
+
+  // Line
+  ctx.strokeStyle = color || '#c75b3a';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  data.forEach((val, i) => {
+    const x = pad.left + step * i;
+    const y = h - pad.bottom - (val / max) * chartH;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Points + labels
+  data.forEach((val, i) => {
+    const x = pad.left + step * i;
+    const y = h - pad.bottom - (val / max) * chartH;
+
+    ctx.fillStyle = '#fff';
+    ctx.strokeStyle = color || '#c75b3a';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#8a8580';
+    ctx.font = '500 10px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(labels[i], x, h - pad.bottom + 16);
+  });
+}
+
+function drawPieChart(canvasId, labels, data, colors) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+
+  const w = rect.width, h = rect.height;
+  const cx = w / 2, cy = h / 2;
+  const radius = Math.min(w, h) / 2 - 50;
+
+  ctx.clearRect(0, 0, w, h);
+
+  const total = sum(data);
+  if (!total) {
+    ctx.fillStyle = '#8a8580';
+    ctx.font = '500 14px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('No data for this period', cx, cy);
+    return;
+  }
+
+  const palette = colors || ['#c75b3a', '#5a8f6e', '#d4a843', '#5a7fa8', '#9b6ba8', '#d97b5a', '#8d7b6b', '#7a9088'];
+  let start = -Math.PI / 2;
+
+  data.forEach((val, i) => {
+    const slice = (val / total) * Math.PI * 2;
+    ctx.fillStyle = palette[i % palette.length];
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, radius, start, start + slice);
+    ctx.closePath();
+    ctx.fill();
+
+    // Label
+    const mid = start + slice / 2;
+    const lx = cx + Math.cos(mid) * (radius * 0.65);
+    const ly = cy + Math.sin(mid) * (radius * 0.65);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 11px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const pct = ((val / total) * 100).toFixed(0);
+    if (pct >= 5) ctx.fillText(`${pct}%`, lx, ly);
+
+    start += slice;
+  });
+
+  // Donut hole
+  ctx.fillStyle = '#faf8f5';
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius * 0.45, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#2d2a26';
+  ctx.font = 'bold 13px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(`${(total/60).toFixed(0)}h`, cx, cy - 8);
+  ctx.fillStyle = '#8a8580';
+  ctx.font = '500 10px Inter, sans-serif';
+  ctx.fillText('total', cx, cy + 8);
+
+  // Legend
+  let ly = 14;
+  data.forEach((val, i) => {
+    if (val === 0) return;
+    ctx.fillStyle = palette[i % palette.length];
+    ctx.fillRect(w - 110, ly, 10, 10);
+    ctx.fillStyle = '#8a8580';
+    ctx.font = '500 11px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(labels[i].substring(0, 14), w - 96, ly + 9);
+    ly += 20;
+  });
+}
+
+// ================== WEEKLY CHART ==================
+function renderWeeklyChart() {
+  const weeks = [];
+  const now = new Date();
+  for (let i = 7; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i * 7);
+    const ws = startOfWeek(d);
+    const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const mins = sum(sessions.filter(s => {
+      const sd = new Date(s.date);
+      const sw = startOfWeek(sd);
+      return sw.toDateString() === ws.toDateString();
+    }).map(s => s.minutes));
+    weeks.push({ label, mins });
+  }
+  drawBarChart('weeklyChart', weeks.map(w => w.label), weeks.map(w => w.mins), '#5a8f6e');
+}
+
+// ================== MONTHLY VIEW ==================
+function changeMonth(delta) {
+  currentMonth.setMonth(currentMonth.getMonth() + delta);
+  renderMonthView();
+}
+
+function renderMonthView() {
+  const year = currentMonth.getFullYear();
+  const month = currentMonth.getMonth();
+  document.getElementById('monthLabel').textContent = currentMonth.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+
+  const monthSessions = sessions.filter(s => {
+    const d = new Date(s.date);
+    return d.getFullYear() === year && d.getMonth() === month;
+  });
+
+  const totalMin = sum(monthSessions.map(s => s.minutes));
+  const totalHrs = (totalMin / 60).toFixed(1);
+  const count = monthSessions.length;
+  const days = [...new Set(monthSessions.map(s => s.date))].length;
+  const pieces = [...new Set(monthSessions.map(s => s.piece))].length;
+
+  document.getElementById('monthStats').innerHTML = `
+    <div class="stat-box"><div class="stat-value">${totalHrs}</div><div class="stat-label">hours</div></div>
+    <div class="stat-box"><div class="stat-value">${count}</div><div class="stat-label">sessions</div></div>
+    <div class="stat-box"><div class="stat-value">${days}</div><div class="stat-label">days practiced</div></div>
+    <div class="stat-box"><div class="stat-value">${pieces}</div><div class="stat-label">pieces</div></div>
+  `;
+
+  // Daily chart
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daily = [];
+  const labels = [];
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    labels.push(d);
+    daily.push(sum(monthSessions.filter(s => s.date === dateStr).map(s => s.minutes)));
+  }
+  drawBarChart('dailyChart', labels, daily, '#c75b3a');
+
+  // Pie chart by piece
+  const pieceMap = {};
+  monthSessions.forEach(s => {
+    pieceMap[s.piece] = (pieceMap[s.piece] || 0) + s.minutes;
+  });
+  const pieEntries = Object.entries(pieceMap).sort((a, b) => b[1] - a[1]);
+  drawPieChart('monthPieChart', pieEntries.map(e => e[0]), pieEntries.map(e => e[1]));
+}
+
+// ================== SCORE DETAIL ==================
+function renderScoreSelect() {
+  const sel = document.getElementById('scoreSelect');
+  const pieces = getPieces();
+  sel.innerHTML = '<option value="">-- Choose a piece --</option>' +
+    pieces.map(p => `<option value="${p}">${p}</option>`).join('');
+}
+
+function renderScoreDetail() {
+  const piece = document.getElementById('scoreSelect').value;
+  const container = document.getElementById('scoreDetail');
+  if (!piece) {
+    container.innerHTML = '';
+    return;
+  }
+
+  const pieceSessions = sessions.filter(s => s.piece === piece).sort((a, b) => new Date(b.date) - new Date(a.date));
+  const totalMin = sum(pieceSessions.map(s => s.minutes));
+  const totalHrs = (totalMin / 60).toFixed(1);
+  const count = pieceSessions.length;
+  const first = pieceSessions[pieceSessions.length - 1]?.date;
+  const last = pieceSessions[0]?.date;
+
+  // Monthly breakdown for this piece
+  const monthMap = {};
+  pieceSessions.forEach(s => {
+    const d = new Date(s.date);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    monthMap[key] = (monthMap[key] || 0) + s.minutes;
+  });
+  const months = Object.entries(monthMap).sort();
+
+  container.innerHTML = `
+    <div class="card">
+      <h2>${piece}</h2>
+      <div class="stats-grid">
+        <div class="stat-box"><div class="stat-value">${totalHrs}</div><div class="stat-label">total hours</div></div>
+        <div class="stat-box"><div class="stat-value">${count}</div><div class="stat-label">sessions</div></div>
+        <div class="stat-box"><div class="stat-value">${fmtDate(first)}</div><div class="stat-label">first played</div></div>
+        <div class="stat-box"><div class="stat-value">${fmtDate(last)}</div><div class="stat-label">last played</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Monthly Progress</h2>
+      <div class="chart-container"><canvas id="scoreMonthChart"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Session History</h2>
+      <div class="entry-list">
+        ${pieceSessions.map(s => `
+          <div class="entry">
+            <div>
+              <div class="entry-piece">${fmtDate(s.date)}</div>
+              <div class="entry-meta">${s.composer || ''}</div>
+            </div>
+            <div class="entry-duration">${s.minutes} min</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  if (months.length) {
+    setTimeout(() => {
+      drawBarChart('scoreMonthChart', months.map(m => m[0]), months.map(m => m[1]), '#d4a843');
+    }, 0);
+  }
+}
+
+// ================== HISTORY ==================
+function renderHistory() {
+  const list = sessions.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+  document.getElementById('historyList').innerHTML = list.length ? list.map(s => `
+    <div class="entry">
+      <div>
+        <div class="entry-piece">${s.piece}</div>
+        <div class="entry-meta">${fmtDate(s.date)} ${s.composer ? '· ' + s.composer : ''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="entry-duration">${s.minutes} min</span>
+        <button class="delete-btn" onclick="deleteSession(${s.id})">×</button>
+      </div>
+    </div>
+  `).join('') : `
+    <div class="empty-state">
+      <div class="empty-state-icon">🎹</div>
+      <div>No sessions yet. Time to tickle the ivories!</div>
+    </div>`;
+}
+
+// ================== TABS ==================
+function setupTabs() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+      // Re-render charts that need sizing
+      if (tab.dataset.tab === 'overview') setTimeout(renderWeeklyChart, 10);
+      if (tab.dataset.tab === 'monthly') setTimeout(renderMonthView, 10);
+      if (tab.dataset.tab === 'scores') setTimeout(renderScoreDetail, 10);
+    });
+  });
+}
+
+// ================== INIT ==================
+document.getElementById('logDate').valueAsDate = new Date();
+setupTabs();
+renderAll();
+
+// Handle resize for canvas charts
+window.addEventListener('resize', () => {
+  renderWeeklyChart();
+  renderMonthView();
+  renderScoreDetail();
+});
+
+// ================== PWA ==================
+(function() {
+  // Inline manifest
+  const manifest = {
+    name: 'Piano Practice Log',
+    short_name: 'Piano Log',
+    start_url: '.',
+    display: 'standalone',
+    background_color: '#faf8f5',
+    theme_color: '#faf8f5',
+    icons: [{ src: 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22%3E%3Crect fill=%22%23faf8f5%22 width=%22192%22 height=%22192%22 rx=%2224%22/%3E%3Ctext x=%2296%22 y=%22120%22 font-size=%22110%22 text-anchor=%22middle%22%3E🎹%3C/text%3E%3C/svg%3E', sizes: '192x192', type: 'image/svg+xml' }]
+  };
+  const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+  const manifestURL = URL.createObjectURL(manifestBlob);
+  const link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = manifestURL;
+  document.head.appendChild(link);
+
+  // Inline service worker
+  const swCode = `
+    self.addEventListener('install', e => {
+      e.waitUntil(
+        caches.open('piano-log-v1').then(cache =>
+          cache.addAll(['./'])
+        )
+      );
+      self.skipWaiting();
+    });
+    self.addEventListener('activate', e => {
+      e.waitUntil(self.clients.claim());
+    });
+    self.addEventListener('fetch', e => {
+      e.respondWith(
+        caches.match(e.request).then(r => r || fetch(e.request))
+      );
+    });
+  `;
+  const swBlob = new Blob([swCode], { type: 'application/javascript' });
+  const swURL = URL.createObjectURL(swBlob);
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register(swURL).catch(() => {});
+  }
+})();
+</script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4655f3c58dd6497fb7ddb85b68480db7","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
