@@ -470,8 +470,10 @@
         </div>
         <div>
           <label>Score / Piece</label>
-          <input type="text" id="logPiece" list="pieceList" placeholder="e.g. Chopin Prelude in A major">
-          <datalist id="pieceList"></datalist>
+          <select id="logPieceSelect" onchange="handlePieceSelect(this)">
+            <option value="">-- New piece --</option>
+          </select>
+          <input type="text" id="logPiece" placeholder="e.g. Chopin Prelude in A major" style="margin-top:8px;">
         </div>
         <div>
           <label>Minutes Practiced</label>
@@ -614,7 +616,9 @@ function addSession() {
   renderAll();
 
   // Reset
+  document.getElementById('logPieceSelect').value = '';
   document.getElementById('logPiece').value = '';
+  document.getElementById('logPiece').style.display = 'block';
   document.getElementById('logMinutes').value = '10';
   document.getElementById('logComposer').value = '';
 
@@ -690,8 +694,25 @@ function renderAll() {
 }
 
 function updatePieceList() {
-  const dl = document.getElementById('pieceList');
-  dl.innerHTML = getPieces().map(p => `<option value="${p}">`).join('');
+  const sel = document.getElementById('logPieceSelect');
+  const pieces = getPieces();
+  const currentVal = sel.value;
+  sel.innerHTML = '<option value="">-- New piece --</option>' +
+    pieces.map(p => `<option value="${p}">${p}</option>`).join('');
+  // Restore selection if still valid
+  if (pieces.includes(currentVal)) sel.value = currentVal;
+}
+
+function handlePieceSelect(sel) {
+  const input = document.getElementById('logPiece');
+  if (sel.value) {
+    input.style.display = 'none';
+    input.value = sel.value;
+  } else {
+    input.style.display = 'block';
+    input.value = '';
+    input.focus();
+  }
 }
 
 function renderWeekStats() {
@@ -1187,6 +1208,7 @@ function setupTabs() {
 
 // ================== INIT ==================
 document.getElementById('logDate').valueAsDate = new Date();
+handlePieceSelect(document.getElementById('logPieceSelect')); // init visibility
 setupTabs();
 renderAll();
 
