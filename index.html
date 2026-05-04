@@ -23,6 +23,8 @@
     --border-light: #f0ece7;
     --success: #5a8f6e;
     --success-bg: #edf5f0;
+    --danger: #c0392b;
+    --danger-bg: #fdf0ee;
     --shadow: 0 1px 3px rgba(45,42,38,0.04), 0 4px 12px rgba(45,42,38,0.06);
     --shadow-hover: 0 2px 6px rgba(45,42,38,0.06), 0 8px 24px rgba(45,42,38,0.08);
   }
@@ -191,13 +193,18 @@
   }
   button:hover { transform: translateY(-1px); }
   button:active { transform: translateY(0) scale(0.98); }
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
 
   .btn-primary {
     background: var(--accent);
     color: #fff;
     box-shadow: 0 2px 8px rgba(199,91,58,0.25);
   }
-  .btn-primary:hover {
+  .btn-primary:hover:not(:disabled) {
     background: #b54d2e;
     box-shadow: 0 4px 12px rgba(199,91,58,0.3);
   }
@@ -206,7 +213,7 @@
     color: var(--text);
     border: 1.5px solid var(--border);
   }
-  .btn-secondary:hover {
+  .btn-secondary:hover:not(:disabled) {
     background: var(--border-light);
     border-color: var(--text-muted);
   }
@@ -214,6 +221,14 @@
     background: var(--success);
     color: #fff;
     box-shadow: 0 2px 8px rgba(90,143,110,0.25);
+  }
+  .btn-danger {
+    background: var(--danger-bg);
+    color: var(--danger);
+    border: 1.5px solid #e0b4ae;
+  }
+  .btn-danger:hover:not(:disabled) {
+    background: #ffeae8;
   }
 
   .btn-row {
@@ -257,7 +272,7 @@
 
   /* Lists */
   .entry-list {
-    max-height: 360px;
+    max-height: 420px;
     overflow-y: auto;
     margin: -6px;
     padding: 6px;
@@ -294,8 +309,8 @@
     transition: all 0.15s;
   }
   .delete-btn:hover {
-    background: #fff0ee;
-    color: #c0392b;
+    background: var(--danger-bg);
+    color: var(--danger);
     border-color: #e0b4ae;
   }
 
@@ -323,7 +338,7 @@
     border: 1px solid var(--border-light);
     border-left: 3px solid var(--accent);
     transition: all 0.2s ease;
-    cursor: default;
+    cursor: pointer;
   }
   .piece-card:hover {
     transform: translateY(-3px);
@@ -389,7 +404,7 @@
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-  /* Floating badge for saved feedback */
+  /* Toast */
   .toast {
     position: fixed;
     bottom: 24px;
@@ -409,6 +424,89 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
+  /* Save confirmation overlay */
+  .save-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(45,42,38,0.15);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    animation: fadeIn 0.2s ease;
+  }
+  .save-modal {
+    background: var(--bg-elevated);
+    border-radius: 20px;
+    padding: 32px 28px;
+    text-align: center;
+    box-shadow: var(--shadow-hover);
+    max-width: 340px;
+    width: 90%;
+    animation: scaleIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.92); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .save-modal .icon {
+    font-size: 3rem;
+    margin-bottom: 12px;
+  }
+  .save-modal h3 {
+    margin: 0 0 8px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .save-modal p {
+    margin: 0 0 20px;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+  .modal-actions button {
+    width: auto;
+    padding: 10px 20px;
+    min-width: 100px;
+  }
+
+  /* Undo hint under form */
+  .undo-hint {
+    margin-top: 10px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .undo-hint.visible {
+    opacity: 1;
+  }
+  .undo-hint button {
+    background: none;
+    border: none;
+    color: var(--danger);
+    font-weight: 500;
+    cursor: pointer;
+    padding: 2px 6px;
+    width: auto;
+    font-size: 0.82rem;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    display: inline;
+  }
+  .undo-hint button:hover {
+    color: #a03025;
+    transform: none;
+  }
+
   /* Streak flame */
   .streak-badge {
     display: inline-flex;
@@ -420,6 +518,17 @@
     border-radius: 20px;
     font-size: 0.8rem;
     font-weight: 600;
+  }
+
+  /* Inline session list in This Week */
+  .week-sessions {
+    margin-top: 16px;
+  }
+  .week-sessions h3 {
+    margin: 0 0 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-muted);
   }
 
   @media (max-width: 540px) {
@@ -441,6 +550,9 @@
     .tabs { padding: 4px; gap: 4px; }
     .toast { right: 12px; bottom: 12px; padding: 10px 16px; font-size: 0.85rem; }
     .form-grid { gap: 12px; }
+    .save-modal { padding: 24px 20px; max-width: 300px; }
+    .modal-actions { flex-direction: column; }
+    .modal-actions button { width: 100%; }
   }
 </style>
 </head>
@@ -485,14 +597,18 @@
         </div>
       </div>
       <div class="btn-row">
-        <button class="btn-primary" onclick="addSession()">Save Session</button>
+        <button class="btn-primary" id="saveBtn" onclick="addSession()">Save Session</button>
         <button class="btn-secondary" onclick="quickLog(10)">Quick: 10 min</button>
+      </div>
+      <div class="undo-hint" id="undoHint">
+        Saved just now — <button onclick="undoLastSave()">Undo</button>
       </div>
     </div>
 
     <div class="card">
       <h2>This Week</h2>
       <div class="stats-grid" id="weekStats"></div>
+      <div class="week-sessions" id="weekSessionList"></div>
     </div>
   </div>
 
@@ -534,8 +650,9 @@
 
   <!-- BY SCORE -->
   <div class="panel" id="panel-scores">
-    <div class="card">
-      <h2>Select a Score</h2>
+    <div id="scoreOverview"></div>
+    <div class="card" style="margin-top: 20px;">
+      <h2>Score Detail</h2>
       <select id="scoreSelect" onchange="renderScoreDetail()"><option value="">-- Choose a piece --</option></select>
     </div>
     <div id="scoreDetail"></div>
@@ -569,6 +686,9 @@ function saveData(data) {
 
 let sessions = loadData();
 let currentMonth = new Date();
+let isSaving = false;
+let lastSavedId = null;
+let undoTimer = null;
 
 // ================== UTILS ==================
 const fmtDate = d => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -578,12 +698,23 @@ const sameMonth = (a, b) => {
   const da = new Date(a), db = new Date(b);
   return da.getFullYear() === db.getFullYear() && da.getMonth() === db.getMonth();
 };
-const startOfWeek = d => {
-  const date = new Date(d);
-  const day = date.getDay();
-  const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-  return new Date(date.setDate(diff));
+
+// FIX: strip time from dates for clean comparison
+const dateOnly = d => {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
 };
+
+const startOfWeek = d => {
+  const date = dateOnly(new Date(d));
+  const day = date.getDay(); // 0=Sun, 1=Mon
+  // Monday-start week
+  const diff = day === 0 ? -6 : 1 - day;
+  date.setDate(date.getDate() + diff);
+  return date;
+};
+
 const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
 const sum = arr => arr.reduce((a, b) => a + b, 0);
 
@@ -593,6 +724,12 @@ function getPieces() {
 }
 
 function addSession() {
+  if (isSaving) return;
+  isSaving = true;
+  const saveBtn = document.getElementById('saveBtn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving…';
+
   const date = document.getElementById('logDate').value;
   const piece = document.getElementById('logPiece').value.trim();
   const minutes = parseInt(document.getElementById('logMinutes').value);
@@ -600,11 +737,17 @@ function addSession() {
 
   if (!date || !piece || !minutes || minutes < 1) {
     showToast('Please fill in date, piece, and minutes.');
+    isSaving = false;
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save Session';
     return;
   }
 
+  const sessionId = Date.now();
+  lastSavedId = sessionId;
+
   sessions.push({
-    id: Date.now(),
+    id: sessionId,
     date,
     piece,
     minutes,
@@ -615,14 +758,81 @@ function addSession() {
   saveData(sessions);
   renderAll();
 
-  // Reset
+  // Reset form
   document.getElementById('logPieceSelect').value = '';
   document.getElementById('logPiece').value = '';
   document.getElementById('logPiece').style.display = 'block';
   document.getElementById('logMinutes').value = '10';
   document.getElementById('logComposer').value = '';
 
-  showToast('✓ Session saved!');
+  // Show confirmation modal
+  showSaveModal(piece, minutes);
+
+  // Show undo hint below form
+  showUndoHint();
+
+  // Re-enable button after delay
+  setTimeout(() => {
+    isSaving = false;
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save Session';
+  }, 1200);
+}
+
+function showSaveModal(piece, minutes) {
+  const existing = document.querySelector('.save-overlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'save-overlay';
+  overlay.innerHTML = `
+    <div class="save-modal">
+      <div class="icon">✓</div>
+      <h3>Session Saved</h3>
+      <p><strong>${piece}</strong><br>${minutes} minutes · ${fmtDate(new Date())}</p>
+      <div class="modal-actions">
+        <button class="btn-success" onclick="this.closest('.save-overlay').remove()">Great!</button>
+        <button class="btn-danger" onclick="undoLastSave(); this.closest('.save-overlay').remove();">Undo</button>
+      </div>
+    </div>
+  `;
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.remove();
+  });
+  document.body.appendChild(overlay);
+
+  // Auto-dismiss after 5 seconds (gives time to click undo)
+  setTimeout(() => {
+    if (overlay.parentNode) overlay.remove();
+  }, 5000);
+}
+
+function showUndoHint() {
+  const hint = document.getElementById('undoHint');
+  hint.classList.add('visible');
+  if (undoTimer) clearTimeout(undoTimer);
+  undoTimer = setTimeout(() => {
+    hint.classList.remove('visible');
+    lastSavedId = null;
+  }, 10000); // Undo available for 10 seconds
+}
+
+function undoLastSave() {
+  if (!lastSavedId) {
+    showToast('Nothing to undo');
+    return;
+  }
+  const idx = sessions.findIndex(s => s.id === lastSavedId);
+  if (idx === -1) {
+    showToast('Session not found');
+    return;
+  }
+  const removed = sessions.splice(idx, 1)[0];
+  saveData(sessions);
+  renderAll();
+  lastSavedId = null;
+  document.getElementById('undoHint').classList.remove('visible');
+  showToast(`Undo: ${removed.piece} (${removed.minutes} min)`);
 }
 
 function showToast(msg) {
@@ -684,10 +894,12 @@ function importData(input) {
 function renderAll() {
   updatePieceList();
   renderWeekStats();
+  renderWeekSessionList();
   renderLifetimeStats();
   renderRepertoire();
   renderWeeklyChart();
   renderMonthView();
+  renderScoreOverview();
   renderScoreSelect();
   renderScoreDetail();
   renderHistory();
@@ -699,7 +911,6 @@ function updatePieceList() {
   const currentVal = sel.value;
   sel.innerHTML = '<option value="">-- New piece --</option>' +
     pieces.map(p => `<option value="${p}">${p}</option>`).join('');
-  // Restore selection if still valid
   if (pieces.includes(currentVal)) sel.value = currentVal;
 }
 
@@ -715,10 +926,18 @@ function handlePieceSelect(sel) {
   }
 }
 
+// FIX: strip time from dates so Monday sessions don't vanish
 function renderWeekStats() {
-  const now = new Date();
+  const now = dateOnly(new Date());
   const weekStart = startOfWeek(now);
-  const weekSessions = sessions.filter(s => new Date(s.date) >= weekStart && new Date(s.date) <= now);
+  const weekEnd = addDays(weekStart, 6);
+  weekEnd.setHours(23, 59, 59, 999);
+
+  const weekSessions = sessions.filter(s => {
+    const sd = dateOnly(new Date(s.date));
+    return sd >= weekStart && sd <= weekEnd;
+  });
+
   const totalMin = sum(weekSessions.map(s => s.minutes));
   const totalHrs = (totalMin / 60).toFixed(1);
   const count = weekSessions.length;
@@ -730,6 +949,45 @@ function renderWeekStats() {
     <div class="stat-box"><div class="stat-value">${count}</div><div class="stat-label">sessions</div></div>
     <div class="stat-box"><div class="stat-value">${avg}</div><div class="stat-label">avg min/session</div></div>
     <div class="stat-box"><div class="stat-value">${pieces}</div><div class="stat-label">pieces touched</div></div>
+  `;
+}
+
+// NEW: show actual session records in This Week
+function renderWeekSessionList() {
+  const now = dateOnly(new Date());
+  const weekStart = startOfWeek(now);
+  const weekEnd = addDays(weekStart, 6);
+  weekEnd.setHours(23, 59, 59, 999);
+
+  const weekSessions = sessions
+    .filter(s => {
+      const sd = dateOnly(new Date(s.date));
+      return sd >= weekStart && sd <= weekEnd;
+    })
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const container = document.getElementById('weekSessionList');
+  if (!weekSessions.length) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = `
+    <h3>This Week's Sessions</h3>
+    <div class="entry-list" style="max-height: 280px;">
+      ${weekSessions.map(s => `
+        <div class="entry">
+          <div>
+            <div class="entry-piece">${s.piece}</div>
+            <div class="entry-meta">${fmtDate(s.date)} ${s.composer ? '· ' + s.composer : ''}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="entry-duration">${s.minutes} min</span>
+            <button class="delete-btn" onclick="deleteSession(${s.id})">×</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
   `;
 }
 
@@ -754,16 +1012,16 @@ function computeStreak() {
   if (!sessions.length) return 0;
   const days = [...new Set(sessions.map(s => s.date))].sort().reverse();
   let streak = 1;
-  const today = new Date().toDateString();
-  let check = new Date(days[0]);
-  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
-  if (check.toDateString() !== today && check.toDateString() !== yesterday.toDateString()) return 0;
+  const today = dateOnly(new Date());
+  let check = dateOnly(new Date(days[0]));
+  const yesterday = addDays(today, -1);
+  if (check.getTime() !== today.getTime() && check.getTime() !== yesterday.getTime()) return 0;
 
   for (let i = 1; i < days.length; i++) {
-    const prev = new Date(days[i]);
-    const expected = new Date(check);
-    expected.setDate(expected.getDate() - 1);
-    if (prev.toDateString() === expected.toDateString()) {
+    const prev = dateOnly(new Date(days[i]));
+    const expected = addDays(check, -1);
+    expected.setHours(0,0,0,0);
+    if (prev.getTime() === expected.getTime()) {
       streak++;
       check = prev;
     } else break;
@@ -791,12 +1049,22 @@ function renderRepertoire() {
   }
 
   document.getElementById('repertoireList').innerHTML = list.map(([name, stats]) => `
-    <div class="piece-card">
+    <div class="piece-card" onclick="jumpToScore('${name.replace(/'/g, "\\'")}')">
       <div class="piece-card-name">${name}</div>
       <div class="piece-card-time">${(stats.minutes / 60).toFixed(1)} hrs</div>
       <div class="piece-card-stats">${stats.sessions} sessions · last: ${fmtDate(stats.last)}</div>
     </div>
   `).join('');
+}
+
+function jumpToScore(pieceName) {
+  // Switch to By Score tab and select the piece
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelector('[data-tab="scores"]').classList.add('active');
+  document.getElementById('panel-scores').classList.add('active');
+  document.getElementById('scoreSelect').value = pieceName;
+  renderScoreDetail();
 }
 
 // ================== CHARTS (Canvas) ==================
@@ -1042,9 +1310,9 @@ function renderWeeklyChart() {
     const ws = startOfWeek(d);
     const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const mins = sum(sessions.filter(s => {
-      const sd = new Date(s.date);
-      const sw = startOfWeek(sd);
-      return sw.toDateString() === ws.toDateString();
+      const sd = dateOnly(new Date(s.date));
+      const sw = dateOnly(ws);
+      return sd.getTime() === sw.getTime();
     }).map(s => s.minutes));
     weeks.push({ label, mins });
   }
@@ -1100,12 +1368,57 @@ function renderMonthView() {
   drawPieChart('monthPieChart', pieEntries.map(e => e[0]), pieEntries.map(e => e[1]));
 }
 
+// ================== SCORE OVERVIEW (NEW) ==================
+function renderScoreOverview() {
+  const pieceMap = {};
+  sessions.forEach(s => {
+    if (!pieceMap[s.piece]) pieceMap[s.piece] = { minutes: 0, sessions: 0, last: s.date, composer: s.composer || '' };
+    pieceMap[s.piece].minutes += s.minutes;
+    pieceMap[s.piece].sessions++;
+    if (s.date > pieceMap[s.piece].last) {
+      pieceMap[s.piece].last = s.date;
+      if (s.composer) pieceMap[s.piece].composer = s.composer;
+    }
+  });
+
+  const list = Object.entries(pieceMap).sort((a, b) => b[1].minutes - a[1].minutes);
+  const container = document.getElementById('scoreOverview');
+
+  if (!list.length) {
+    container.innerHTML = `
+      <div class="card">
+        <div class="empty-state">
+          <div class="empty-state-icon">🎼</div>
+          <div>No sessions yet. Go log one!</div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="card">
+      <h2>All Scores</h2>
+      <div class="piece-cards">
+        ${list.map(([name, stats]) => `
+          <div class="piece-card" onclick="document.getElementById('scoreSelect').value='${name.replace(/'/g, "\\'")}';renderScoreDetail();document.getElementById('scoreSelect').scrollIntoView({behavior:'smooth'});">
+            <div class="piece-card-name">${name}</div>
+            <div class="piece-card-time">${(stats.minutes / 60).toFixed(1)} hrs</div>
+            <div class="piece-card-stats">${stats.sessions} sessions · last: ${fmtDate(stats.last)}${stats.composer ? ' · ' + stats.composer : ''}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
 // ================== SCORE DETAIL ==================
 function renderScoreSelect() {
   const sel = document.getElementById('scoreSelect');
   const pieces = getPieces();
+  const currentVal = sel.value;
   sel.innerHTML = '<option value="">-- Choose a piece --</option>' +
     pieces.map(p => `<option value="${p}">${p}</option>`).join('');
+  if (pieces.includes(currentVal)) sel.value = currentVal;
 }
 
 function renderScoreDetail() {
@@ -1155,7 +1468,10 @@ function renderScoreDetail() {
               <div class="entry-piece">${fmtDate(s.date)}</div>
               <div class="entry-meta">${s.composer || ''}</div>
             </div>
-            <div class="entry-duration">${s.minutes} min</div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span class="entry-duration">${s.minutes} min</span>
+              <button class="delete-btn" onclick="deleteSession(${s.id})">×</button>
+            </div>
           </div>
         `).join('')}
       </div>
@@ -1201,7 +1517,12 @@ function setupTabs() {
       // Re-render charts that need sizing
       if (tab.dataset.tab === 'overview') setTimeout(renderWeeklyChart, 10);
       if (tab.dataset.tab === 'monthly') setTimeout(renderMonthView, 10);
-      if (tab.dataset.tab === 'scores') setTimeout(renderScoreDetail, 10);
+      if (tab.dataset.tab === 'scores') {
+        setTimeout(() => {
+          renderScoreOverview();
+          renderScoreDetail();
+        }, 10);
+      }
     });
   });
 }
