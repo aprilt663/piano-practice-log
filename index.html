@@ -723,60 +723,72 @@ function getPieces() {
   return [...new Set(sessions.map(s => s.piece))].filter(Boolean).sort();
 }
 
+// FIX Bug 2: Guaranteed button reset via finally + explicit reset function
+function resetSaveButton() {
+  isSaving = false;
+  const saveBtn = document.getElementById('saveBtn');
+  if (saveBtn) {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save Session';
+  }
+}
+
 function addSession() {
   if (isSaving) return;
   isSaving = true;
   const saveBtn = document.getElementById('saveBtn');
-  saveBtn.disabled = true;
-  saveBtn.textContent = 'Saving…';
-
-  const date = document.getElementById('logDate').value;
-  const piece = document.getElementById('logPiece').value.trim();
-  const minutes = parseInt(document.getElementById('logMinutes').value);
-  const composer = document.getElementById('logComposer').value.trim();
-
-  if (!date || !piece || !minutes || minutes < 1) {
-    showToast('Please fill in date, piece, and minutes.');
-    isSaving = false;
-    saveBtn.disabled = false;
-    saveBtn.textContent = 'Save Session';
-    return;
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving…';
   }
 
-  const sessionId = Date.now();
-  lastSavedId = sessionId;
+  try {
+    const date = document.getElementById('logDate').value;
+    const piece = document.getElementById('logPiece').value.trim();
+    const minutes = parseInt(document.getElementById('logMinutes').value);
+    const composer = document.getElementById('logComposer').value.trim();
 
-  sessions.push({
-    id: sessionId,
-    date,
-    piece,
-    minutes,
-    composer,
-    createdAt: new Date().toISOString()
-  });
+    if (!date || !piece || !minutes || minutes < 1) {
+      showToast('Please fill in date, piece, and minutes.');
+      return;
+    }
 
-  saveData(sessions);
-  renderAll();
+    const sessionId = Date.now();
+    lastSavedId = sessionId;
 
-  // Reset form
-  document.getElementById('logPieceSelect').value = '';
-  document.getElementById('logPiece').value = '';
-  document.getElementById('logPiece').style.display = 'block';
-  document.getElementById('logMinutes').value = '10';
-  document.getElementById('logComposer').value = '';
+    sessions.push({
+      id: sessionId,
+      date,
+      piece,
+      minutes,
+      composer,
+      createdAt: new Date().toISOString()
+    });
 
-  // Show confirmation modal
-  showSaveModal(piece, minutes);
+    saveData(sessions);
+    renderAll();
 
-  // Show undo hint below form
-  showUndoHint();
+    // Reset form
+    document.getElementById('logPieceSelect').value = '';
+    document.getElementById('logPiece').value = '';
+    document.getElementById('logPiece').style.display = 'block';
+    document.getElementById('logMinutes').value = '10';
+    document.getElementById('logComposer').value = '';
 
-  // Re-enable button after delay
-  setTimeout(() => {
-    isSaving = false;
-    saveBtn.disabled = false;
-    saveBtn.textContent = 'Save Session';
-  }, 1200);
+    // Show confirmation modal
+    showSaveModal(piece, minutes);
+
+    // Show undo hint below form
+    showUndoHint();
+
+  } catch (err) {
+    console.error('Save error:', err);
+    showToast('Something went wrong. Check console.');
+  } finally {
+    // FIX Bug 2: Always reset, no matter what
+    // Small delay so "Saving…" is visible briefly even on fast paths
+    setTimeout(resetSaveButton, 800);
+  }
 }
 
 function showSaveModal(piece, minutes) {
@@ -809,6 +821,7 @@ function showSaveModal(piece, minutes) {
 
 function showUndoHint() {
   const hint = document.getElementById('undoHint');
+  if (!hint) return;
   hint.classList.add('visible');
   if (undoTimer) clearTimeout(undoTimer);
   undoTimer = setTimeout(() => {
@@ -831,7 +844,8 @@ function undoLastSave() {
   saveData(sessions);
   renderAll();
   lastSavedId = null;
-  document.getElementById('undoHint').classList.remove('visible');
+  const hint = document.getElementById('undoHint');
+  if (hint) hint.classList.remove('visible');
   showToast(`Undo: ${removed.piece} (${removed.minutes} min)`);
 }
 
@@ -907,6 +921,7 @@ function renderAll() {
 
 function updatePieceList() {
   const sel = document.getElementById('logPieceSelect');
+  if (!sel) return;
   const pieces = getPieces();
   const currentVal = sel.value;
   sel.innerHTML = '<option value="">-- New piece --</option>' +
@@ -944,7 +959,9 @@ function renderWeekStats() {
   const avg = count ? (totalMin / count).toFixed(0) : 0;
   const pieces = [...new Set(weekSessions.map(s => s.piece))].length;
 
-  document.getElementById('weekStats').innerHTML = `
+  const container = document.getElementById('weekStats');
+  if (!container) return;
+  container.innerHTML = `
     <div class="stat-box"><div class="stat-value">${totalHrs}</div><div class="stat-label">hours this week</div></div>
     <div class="stat-box"><div class="stat-value">${count}</div><div class="stat-label">sessions</div></div>
     <div class="stat-box"><div class="stat-value">${avg}</div><div class="stat-label">avg min/session</div></div>
@@ -967,6 +984,7 @@ function renderWeekSessionList() {
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
   const container = document.getElementById('weekSessionList');
+  if (!container) return;
   if (!weekSessions.length) {
     container.innerHTML = '';
     return;
@@ -999,7 +1017,9 @@ function renderLifetimeStats() {
   const avg = count ? (totalMin / count).toFixed(0) : 0;
   const streak = computeStreak();
 
-  document.getElementById('lifetimeStats').innerHTML = `
+  const container = document.getElementById('lifetimeStats');
+  if (!container) return;
+  container.innerHTML = `
     <div class="stat-box"><div class="stat-value">${totalHrs}</div><div class="stat-label">total hours</div></div>
     <div class="stat-box"><div class="stat-value">${count}</div><div class="stat-label">sessions</div></div>
     <div class="stat-box"><div class="stat-value">${pieces}</div><div class="stat-label">pieces in repertoire</div></div>
@@ -1039,8 +1059,10 @@ function renderRepertoire() {
   });
 
   const list = Object.entries(pieceMap).sort((a, b) => b[1].minutes - a[1].minutes);
+  const container = document.getElementById('repertoireList');
+  if (!container) return;
   if (!list.length) {
-    document.getElementById('repertoireList').innerHTML = `
+    container.innerHTML = `
       <div class="empty-state">
         <div class="empty-state-icon">🎼</div>
         <div>No sessions yet. Go log one!</div>
@@ -1048,7 +1070,7 @@ function renderRepertoire() {
     return;
   }
 
-  document.getElementById('repertoireList').innerHTML = list.map(([name, stats]) => `
+  container.innerHTML = list.map(([name, stats]) => `
     <div class="piece-card" onclick="jumpToScore('${name.replace(/'/g, "\\'")}')">
       <div class="piece-card-name">${name}</div>
       <div class="piece-card-time">${(stats.minutes / 60).toFixed(1)} hrs</div>
@@ -1341,7 +1363,9 @@ function renderMonthView() {
   const days = [...new Set(monthSessions.map(s => s.date))].length;
   const pieces = [...new Set(monthSessions.map(s => s.piece))].length;
 
-  document.getElementById('monthStats').innerHTML = `
+  const container = document.getElementById('monthStats');
+  if (!container) return;
+  container.innerHTML = `
     <div class="stat-box"><div class="stat-value">${totalHrs}</div><div class="stat-label">hours</div></div>
     <div class="stat-box"><div class="stat-value">${count}</div><div class="stat-label">sessions</div></div>
     <div class="stat-box"><div class="stat-value">${days}</div><div class="stat-label">days practiced</div></div>
@@ -1383,6 +1407,7 @@ function renderScoreOverview() {
 
   const list = Object.entries(pieceMap).sort((a, b) => b[1].minutes - a[1].minutes);
   const container = document.getElementById('scoreOverview');
+  if (!container) return;
 
   if (!list.length) {
     container.innerHTML = `
@@ -1414,6 +1439,7 @@ function renderScoreOverview() {
 // ================== SCORE DETAIL ==================
 function renderScoreSelect() {
   const sel = document.getElementById('scoreSelect');
+  if (!sel) return;
   const pieces = getPieces();
   const currentVal = sel.value;
   sel.innerHTML = '<option value="">-- Choose a piece --</option>' +
@@ -1425,7 +1451,7 @@ function renderScoreDetail() {
   const piece = document.getElementById('scoreSelect').value;
   const container = document.getElementById('scoreDetail');
   if (!piece) {
-    container.innerHTML = '';
+    if (container) container.innerHTML = '';
     return;
   }
 
@@ -1445,6 +1471,7 @@ function renderScoreDetail() {
   });
   const months = Object.entries(monthMap).sort();
 
+  if (!container) return;
   container.innerHTML = `
     <div class="card">
       <h2>${piece}</h2>
@@ -1488,7 +1515,9 @@ function renderScoreDetail() {
 // ================== HISTORY ==================
 function renderHistory() {
   const list = sessions.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
-  document.getElementById('historyList').innerHTML = list.length ? list.map(s => `
+  const container = document.getElementById('historyList');
+  if (!container) return;
+  container.innerHTML = list.length ? list.map(s => `
     <div class="entry">
       <div>
         <div class="entry-piece">${s.piece}</div>
@@ -1519,7 +1548,9 @@ function setupTabs() {
       if (tab.dataset.tab === 'monthly') setTimeout(renderMonthView, 10);
       if (tab.dataset.tab === 'scores') {
         setTimeout(() => {
+          // FIX Bug 1: Refresh dropdown when switching to scores tab
           renderScoreOverview();
+          renderScoreSelect();
           renderScoreDetail();
         }, 10);
       }
