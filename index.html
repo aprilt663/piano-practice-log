@@ -1096,8 +1096,6 @@ function renderWeekSessionList() {
     })
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  const container = document.getElementById('weekSessionList');
-  if (!container) return;
   if (!weekSessions.length) {
     container.innerHTML = '';
     return;
