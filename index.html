@@ -398,6 +398,87 @@
     opacity: 0.5;
   }
 
+  /* Calendar Grid */
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-top: 16px;
+  }
+  .calendar-day-name {
+    text-align: center;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 8px 0;
+  }
+  .calendar-cell {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.88rem;
+    font-weight: 500;
+    background: var(--bg);
+    border: 1.5px solid var(--border-light);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+    min-height: 44px;
+  }
+  .calendar-cell:hover {
+    border-color: var(--accent-soft);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+  }
+  .calendar-cell.other-month {
+    opacity: 0.35;
+  }
+  .calendar-cell.practiced {
+    border-color: transparent;
+  }
+  .calendar-cell.practiced.light { background: #f3e8e0; color: var(--accent); }
+  .calendar-cell.practiced.medium { background: #e8c8b8; color: #8a3a1f; }
+  .calendar-cell.practiced.heavy { background: #d4a08a; color: #5a2312; }
+  .calendar-cell.practiced.full { background: var(--accent); color: #fff; }
+  .calendar-cell .day-minutes {
+    font-size: 0.65rem;
+    font-weight: 600;
+    margin-top: 2px;
+    opacity: 0.8;
+  }
+  .calendar-cell.today {
+    border-color: var(--accent);
+    border-width: 2px;
+  }
+  .calendar-cell.today::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .calendar-legend {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    justify-content: center;
+  }
+  .calendar-legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+
   /* Scrollbar */
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -565,6 +646,7 @@
 
   <div class="tabs">
     <div class="tab active" data-tab="log">➕ Log Session</div>
+    <div class="tab" data-tab="calendar">🗓 Calendar</div>
     <div class="tab" data-tab="overview">📊 Overview</div>
     <div class="tab" data-tab="monthly">📅 By Month</div>
     <div class="tab" data-tab="scores">📖 By Score</div>
@@ -597,8 +679,8 @@
         </div>
       </div>
       <div class="btn-row">
-        <button class="btn-primary" id="saveBtn" onclick="addSession()">Save Session</button>
-        <button class="btn-secondary" onclick="quickLog(10)">Quick: 10 min</button>
+        <button class="btn-primary" id="saveBtn" type="button" onclick="addSession()">Save Session</button>
+        <button class="btn-secondary" type="button" onclick="quickLog(10)">Quick: 10 min</button>
       </div>
       <div class="undo-hint" id="undoHint">
         Saved just now — <button onclick="undoLastSave()">Undo</button>
@@ -609,6 +691,34 @@
       <h2>This Week</h2>
       <div class="stats-grid" id="weekStats"></div>
       <div class="week-sessions" id="weekSessionList"></div>
+    </div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div class="panel" id="panel-calendar">
+    <div class="card">
+      <div class="month-nav">
+        <button class="btn-secondary" onclick="changeCalendarMonth(-1)">◀ Prev</button>
+        <div class="month-current" id="calendarMonthLabel">...</div>
+        <button class="btn-secondary" onclick="changeCalendarMonth(1)">Next ▶</button>
+      </div>
+      <div id="calendarGrid"></div>
+      <div class="calendar-legend" id="calendarLegend">
+        <span>Less</span>
+        <div class="calendar-legend-dot" style="background:#f3e8e0"></div>
+        <div class="calendar-legend-dot" style="background:#e8c8b8"></div>
+        <div class="calendar-legend-dot" style="background:#d4a08a"></div>
+        <div class="calendar-legend-dot" style="background:var(--accent)"></div>
+        <span>More</span>
+      </div>
+    </div>
+    <div class="card" id="calendarDayDetail" style="display:none">
+      <h2 id="calendarDetailDate"></h2>
+      <div class="entry-list" id="calendarDetailList"></div>
+    </div>
+    <div class="card">
+      <h2>Month Stats</h2>
+      <div class="stats-grid" id="calendarMonthStats"></div>
     </div>
   </div>
 
@@ -912,6 +1022,7 @@ function renderAll() {
   renderLifetimeStats();
   renderRepertoire();
   renderWeeklyChart();
+  renderCalendar();
   renderMonthView();
   renderScoreOverview();
   renderScoreSelect();
@@ -971,6 +1082,8 @@ function renderWeekStats() {
 
 // NEW: show actual session records in This Week
 function renderWeekSessionList() {
+  const container = document.getElementById('weekSessionList');
+  if (!container) return;
   const now = dateOnly(new Date());
   const weekStart = startOfWeek(now);
   const weekEnd = addDays(weekStart, 6);
@@ -1322,6 +1435,127 @@ function drawPieChart(canvasId, labels, data, colors) {
   });
 }
 
+// ================== CALENDAR VIEW ==================
+let calendarMonth = new Date();
+
+function changeCalendarMonth(delta) {
+  calendarMonth.setMonth(calendarMonth.getMonth() + delta);
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const grid = document.getElementById('calendarGrid');
+  const label = document.getElementById('calendarMonthLabel');
+  const stats = document.getElementById('calendarMonthStats');
+  if (!grid || !label || !stats) return;
+
+  const year = calendarMonth.getFullYear();
+  const month = calendarMonth.getMonth();
+  label.textContent = calendarMonth.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+
+  const monthSessions = sessions.filter(s => {
+    const d = new Date(s.date);
+    return d.getFullYear() === year && d.getMonth() === month;
+  });
+
+  const totalMin = sum(monthSessions.map(s => s.minutes));
+  const totalHrs = (totalMin / 60).toFixed(1);
+  const count = monthSessions.length;
+  const days = [...new Set(monthSessions.map(s => s.date))].length;
+  const pieces = [...new Set(monthSessions.map(s => s.piece))].length;
+
+  stats.innerHTML = `
+    <div class="stat-box"><div class="stat-value">${totalHrs}</div><div class="stat-label">hours</div></div>
+    <div class="stat-box"><div class="stat-value">${count}</div><div class="stat-label">sessions</div></div>
+    <div class="stat-box"><div class="stat-value">${days}</div><div class="stat-label">days practiced</div></div>
+    <div class="stat-box"><div class="stat-value">${pieces}</div><div class="stat-label">pieces</div></div>
+  `;
+
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startOffset = firstDay.getDay();
+
+  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let html = '<div class="calendar-grid">';
+  dayNames.forEach(dn => {
+    html += `<div class="calendar-day-name">${dn}</div>`;
+  });
+
+  const prevMonthLastDay = new Date(year, month, 0).getDate();
+  for (let i = startOffset - 1; i >= 0; i--) {
+    html += `<div class="calendar-cell other-month"><span style="opacity:0.6">${prevMonthLastDay - i}</span></div>`;
+  }
+
+  const today = dateOnly(new Date());
+
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const daySessions = sessions.filter(s => s.date === dateStr);
+    const dayMinutes = sum(daySessions.map(s => s.minutes));
+
+    const isToday = dateOnly(new Date(dateStr)).getTime() === today.getTime();
+    let cellClass = 'calendar-cell';
+    let inner = `<span>${d}</span>`;
+
+    if (isToday) cellClass += ' today';
+
+    if (dayMinutes > 0) {
+      cellClass += ' practiced';
+      if (dayMinutes <= 10) cellClass += ' light';
+      else if (dayMinutes <= 25) cellClass += ' medium';
+      else if (dayMinutes <= 45) cellClass += ' heavy';
+      else cellClass += ' full';
+      inner += `<span class="day-minutes">${dayMinutes}m</span>`;
+    }
+
+    html += `<div class="${cellClass}" onclick="showCalendarDayDetail('${dateStr}')">${inner}</div>`;
+  }
+
+  const totalCells = startOffset + lastDay.getDate();
+  const remainder = (7 - (totalCells % 7)) % 7;
+  for (let i = 1; i <= remainder; i++) {
+    html += `<div class="calendar-cell other-month"><span style="opacity:0.6">${i}</span></div>`;
+  }
+
+  html += '</div>';
+  grid.innerHTML = html;
+
+  const detail = document.getElementById('calendarDayDetail');
+  if (detail) detail.style.display = 'none';
+}
+
+function showCalendarDayDetail(dateStr) {
+  const detailCard = document.getElementById('calendarDayDetail');
+  const detailDate = document.getElementById('calendarDetailDate');
+  const detailList = document.getElementById('calendarDetailList');
+  if (!detailCard || !detailDate || !detailList) return;
+
+  const daySessions = sessions.filter(s => s.date === dateStr).sort((a, b) => b.id - a.id);
+  if (!daySessions.length) {
+    detailCard.style.display = 'none';
+    return;
+  }
+
+  const totalMin = sum(daySessions.map(s => s.minutes));
+  const prettyDate = new Date(dateStr).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+  detailDate.innerHTML = `${prettyDate} · <span style="color:var(--accent)">${totalMin} min</span>`;
+  detailList.innerHTML = daySessions.map(s => `
+    <div class="entry">
+      <div>
+        <div class="entry-piece">${s.piece}</div>
+        <div class="entry-meta">${s.composer || ''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="entry-duration">${s.minutes} min</span>
+        <button class="delete-btn" onclick="deleteSession(${s.id}); renderCalendar();">×</button>
+      </div>
+    </div>
+  `).join('');
+
+  detailCard.style.display = 'block';
+}
+
 // ================== WEEKLY CHART ==================
 function renderWeeklyChart() {
   const weeks = [];
@@ -1448,7 +1682,7 @@ function renderScoreSelect() {
 }
 
 function renderScoreDetail() {
-  const piece = document.getElementById('scoreSelect').value;
+  const piece = document.getElementById('scoreSelect')?.value;
   const container = document.getElementById('scoreDetail');
   if (!piece) {
     if (container) container.innerHTML = '';
@@ -1546,6 +1780,7 @@ function setupTabs() {
       // Re-render charts that need sizing
       if (tab.dataset.tab === 'overview') setTimeout(renderWeeklyChart, 10);
       if (tab.dataset.tab === 'monthly') setTimeout(renderMonthView, 10);
+      if (tab.dataset.tab === 'calendar') setTimeout(renderCalendar, 10);
       if (tab.dataset.tab === 'scores') {
         setTimeout(() => {
           // FIX Bug 1: Refresh dropdown when switching to scores tab
@@ -1568,6 +1803,7 @@ renderAll();
 window.addEventListener('resize', () => {
   renderWeeklyChart();
   renderMonthView();
+  renderCalendar();
   renderScoreDetail();
 });
 
