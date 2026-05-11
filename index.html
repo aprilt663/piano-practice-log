@@ -791,7 +791,13 @@ function loadData() {
   } catch { return []; }
 }
 function saveData(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    return true;
+  } catch (e) {
+    console.error('Storage error:', e);
+    throw new Error('Cannot save to device storage. If using private browsing, try normal mode. (' + (e.message || e.name) + ')');
+  }
 }
 
 let sessions = loadData();
@@ -875,8 +881,22 @@ function addSession() {
       createdAt: new Date().toISOString()
     });
 
-    saveData(sessions);
-    renderAll();
+    // Try to persist — may fail in private browsing or quota exceeded
+    let storageOk = false;
+    try {
+      saveData(sessions);
+      storageOk = true;
+    } catch (storageErr) {
+      showToast('⚠️ ' + storageErr.message);
+      // Data stays in memory; user can export before closing
+    }
+
+    // Refresh UI — isolate render errors so they don't block the form reset
+    try {
+      renderAll();
+    } catch (renderErr) {
+      console.error('Render error:', renderErr);
+    }
 
     // Reset form
     document.getElementById('logPieceSelect').value = '';
@@ -885,7 +905,7 @@ function addSession() {
     document.getElementById('logMinutes').value = '10';
     document.getElementById('logComposer').value = '';
 
-    // Show confirmation modal
+    // Show confirmation modal regardless of storage hiccups
     showSaveModal(piece, minutes);
 
     // Show undo hint below form
@@ -893,10 +913,8 @@ function addSession() {
 
   } catch (err) {
     console.error('Save error:', err);
-    showToast('Something went wrong. Check console.');
+    showToast('Error: ' + (err.message || 'Something went wrong'));
   } finally {
-    // FIX Bug 2: Always reset, no matter what
-    // Small delay so "Saving…" is visible briefly even on fast paths
     setTimeout(resetSaveButton, 800);
   }
 }
@@ -1016,18 +1034,15 @@ function importData(input) {
 
 // ================== RENDER ==================
 function renderAll() {
-  updatePieceList();
-  renderWeekStats();
-  renderWeekSessionList();
-  renderLifetimeStats();
-  renderRepertoire();
-  renderWeeklyChart();
-  renderCalendar();
-  renderMonthView();
-  renderScoreOverview();
-  renderScoreSelect();
-  renderScoreDetail();
-  renderHistory();
+  const renders = [
+    updatePieceList, renderWeekStats, renderWeekSessionList,
+    renderLifetimeStats, renderRepertoire, renderWeeklyChart,
+    renderCalendar, renderMonthView, renderScoreOverview,
+    renderScoreSelect, renderScoreDetail, renderHistory
+  ];
+  renders.forEach(fn => {
+    try { fn(); } catch (e) { console.error('Render error in', fn.name, e); }
+  });
 }
 
 function updatePieceList() {
